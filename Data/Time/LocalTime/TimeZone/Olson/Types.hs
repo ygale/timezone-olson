@@ -42,7 +42,7 @@ import Control.Monad (mplus)
 --
 -- In a Version 2 format file, the timezone data is split into two parts.
 -- The first part contains timezone data for which all timestamp values
--- can be represented in less 32 bits, and the second part contains
+-- can be represented in less than 32 bits, and the second part contains
 -- timezone data for which 32 bits or more are required to represent
 -- timestamp values. The POSIX TZ string, if present, can only be rendered
 -- in a Version 2 file, and appears after both parts of the timezone data.
