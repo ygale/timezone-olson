@@ -8,8 +8,7 @@
 module Main where
 
 import Data.Time.LocalTime.TimeZone.Series
-import Data.Time.LocalTime.TimeZone.Olson.Types
-import Data.Time.LocalTime.TimeZone.Olson.Parse
+import Data.Time.LocalTime.TimeZone.Olson
 import Data.Time
 import Data.Maybe (listToMaybe)
 import System.Environment (getArgs)
