@@ -88,7 +88,8 @@ olsonToTimeZoneSeries (OlsonData ttimes ttinfos@(dflt0:_) _ _) =
   where
     dflt = fromMaybe dflt0 . listToMaybe $ filter isStd ttinfos
     isStd (TtInfo _ isdst _ _) = not isdst
-    mkTZ (TtInfo gmtoff isdst _ abbr) = TimeZone (gmtoff `div` 60) isdst abbr
+    mkTZ (TtInfo gmtoff isdst _ abbr) =
+      TimeZone ((gmtoff + 30) `div` 60) isdst abbr
     lookupTZ ttinfos ttime = fmap (((,) $ toUTC ttime) . mkTZ) . listToMaybe $
                              drop (transIndex ttime) ttinfos
     toUTC = posixSecondsToUTCTime . fromIntegral . transTime
