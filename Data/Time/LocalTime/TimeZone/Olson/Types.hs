@@ -1,3 +1,4 @@
+{-# OPTIONS_HADDOCK hide #-}
 -----------------------------------------------------------------------------
 -- |
 -- Module      :  Data.Time.LocalTime.TimeZone.Olson.Types
