@@ -65,7 +65,7 @@ import Data.Binary.Get (Get, runGet, getWord8, getWord32be, getWord64be,
 import qualified Data.ByteString as B
 import qualified Data.ByteString.Lazy as L
 import Data.Monoid (mappend)
-import Data.Maybe (listToMaybe)
+import Data.Maybe (listToMaybe, fromMaybe)
 import Data.Word (Word8)
 import Data.Int (Int32, Int64)
 import Data.Typeable (Typeable)
@@ -82,10 +82,12 @@ instance Exception OlsonError
 
 -- | Convert parsed Olson timezone data into a @TimeZoneSeries@.
 olsonToTimeZoneSeries :: OlsonData -> Maybe TimeZoneSeries
-olsonToTimeZoneSeries (OlsonData ttimes ttinfos@(dflt:_) _ _) =
+olsonToTimeZoneSeries (OlsonData ttimes ttinfos@(dflt0:_) _ _) =
     fmap (TimeZoneSeries $ mkTZ dflt) . mapM (lookupTZ ttinfos) $
     reverse ttimes
   where
+    dflt = fromMaybe dflt0 . listToMaybe $ filter isStd ttinfos
+    isStd (TtInfo _ isdst _ _) = not isdst
     mkTZ (TtInfo gmtoff isdst _ abbr) = TimeZone (gmtoff `div` 60) isdst abbr
     lookupTZ ttinfos ttime = fmap (((,) $ toUTC ttime) . mkTZ) . listToMaybe $
                              drop (transIndex ttime) ttinfos
