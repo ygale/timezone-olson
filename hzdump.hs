@@ -1,6 +1,6 @@
 -- | A clone in Haskell of the zdump(8) command, including most of
 -- the bugs. This is useful for testing the Haskell implementation
--- of an Olson timezone parser and renderer against the reference
+-- of the Olson timezone parser and renderer against the reference
 -- implementation in C. But less useful than it might seem at first,
 -- because Haskell rounds historical solar mean timezones to the
 -- nearest minute, whereas the C implementation rounds to the nearest
