@@ -158,7 +158,7 @@ getOlsonPart getTime = do
       TtInfo gmtoff isdst ttype . takeWhile (/= '\NUL') . drop abbrind
     setTtype ttinfo ttype = ttinfo {tt_ttype = ttype}
     boolsToTType _     isgmt | isgmt = UTC
-    booslToTType isstd _             = maybe UnknownType stdOrWall isstd
+    boolsToTType isstd _             = maybe UnknownType stdOrWall isstd
     stdOrWall isstd
      | isstd     = Std
      | otherwise = Wall
