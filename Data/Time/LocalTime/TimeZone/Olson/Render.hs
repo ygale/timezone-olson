@@ -62,7 +62,7 @@ timeZoneSeriesToOlson (TimeZoneSeries dflt pairs)
  | otherwise = Just $
     OlsonData
       [Transition secs ttinfo |
-         (t, tzs) <- pairs,
+         (t, tzs) <- reverse pairs,
          let secs = round $ utcTimeToPOSIXSeconds t,
          ttinfo <- maybeToList $ lookup (mkTT tzs) ttAssocs]
       ttinfos
@@ -73,7 +73,7 @@ timeZoneSeriesToOlson (TimeZoneSeries dflt pairs)
       TtInfo (offset*60) issdst Wall abbr
     dfltTT = mkTT dflt
     ttAssocs = (dfltTT, 0) :
-               zip (filter (/= dfltTT) $ map (mkTT . snd) pairs) [1..]
+      zip (uniq . sort . filter (/= dfltTT) $ map (mkTT . snd) pairs) [1..]
     ttinfos = map fst ttAssocs
 
 -- | Render Olson timezone data as a binary Olson timezone file

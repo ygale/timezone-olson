@@ -97,7 +97,7 @@ data TtInfo abbr =
           tt_ttype :: TransitionType,
           tt_abbr :: abbr   -- ^ The timezone abbreviation string.
          }
-  deriving (Eq, Show)
+  deriving (Eq, Ord, Show)
 
 -- | Olson timezone files can contain leap second specifications, though
 -- the official files have not done so since the late 1980s.
