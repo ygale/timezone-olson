@@ -69,8 +69,8 @@ timeZoneSeriesToOlson (TimeZoneSeries dflt pairs)
       []
       Nothing
   where
-    mkTT (TimeZone offset issdst abbr) =
-      TtInfo (offset*60) issdst Wall abbr
+    mkTT (TimeZone offset isdst abbr) =
+      TtInfo (offset*60) isdst Wall abbr
     dfltTT = mkTT dflt
     ttAssocs = (dfltTT, 0) :
       zip (uniq . sort . filter (/= dfltTT) $ map (mkTT . snd) pairs) [1..]
