@@ -71,7 +71,9 @@ olsonToTimeZoneSeries (OlsonData ttimes ttinfos@(dflt0:_) _ _) =
 olsonToTimeZoneSeries _ = Nothing
 
 -- | Read timezone data from a binary Olson timezone file and convert
--- it into a @TimeZoneSeries@.
+-- it into a @TimeZoneSeries@ for use together with the types and
+-- fucntions of "Data.Time". This is the function from this module
+-- for which you are most likely to have use.
 getTimeZoneSeriesFromOlsonFile :: FilePath -> IO TimeZoneSeries
 getTimeZoneSeriesFromOlsonFile fp = getOlsonFromFile fp >>=
   maybe (throwOlson fp "no timezone found in OlsonData") return .
