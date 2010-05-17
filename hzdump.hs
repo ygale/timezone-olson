@@ -1,5 +1,6 @@
 -- | A clone in Haskell of the zdump(8) command, including most of
--- the bugs. This is useful for testing the Haskell implementation
+-- the bugs, that takes paths to Olson files instead of timezone
+-- names. This is useful for testing the Haskell implementation
 -- of the Olson timezone parser and renderer against the reference
 -- implementation in C. But less useful than it might seem at first,
 -- because Haskell rounds historical solar mean timezones to the
@@ -17,12 +18,14 @@ import System.Locale (defaultTimeLocale)
 
 version :: IO a
 version = do
-  putStrLn "hzdump version 0.1, clone of zdump 1.7 with -c option fixed"
+  putStrLn "hzdump version 0.1, clone of zdump 1.7  -c option fixed,"
+  putStrLn "takes zone file paths instead of zone specifications"
   exitSuccess
 
 usage :: IO a
 usage = do
-  putStrLn "usage: hzdump [--version] [-v] [-c cutoff] zonename ..."
+  putStrLn "usage: hzdump [--version] [-v] [-c cutoff] zone-file-path ..."
+  putStrLn "  where cutoff is lo-year,hi-year or hi-year"
   exitWith $ ExitFailure 1
 
 illegalOpt :: Char -> IO a -- sic
