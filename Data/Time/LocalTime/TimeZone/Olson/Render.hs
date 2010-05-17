@@ -99,8 +99,9 @@ splitOlson (OlsonData transs ttinfos leaps posix) =
      posix)
   where
     cutoff = 0x80000000 -- 2^31
-    ( leaps1 ,  leaps2 ) = partition ((>= cutoff) .  leapTime)  leaps
-    (transs1', transs2') = partition ((>= cutoff) . transTime) transs
+    fitsIn32bits x = x < cutoff && x >= negate cutoff
+    ( leaps1 ,  leaps2 ) = partition (fitsIn32bits .  leapTime)  leaps
+    (transs1', transs2') = partition (fitsIn32bits . transTime) transs
     assoc1 = mkAssoc [0] transs1'
     assoc2 = mkAssoc []  transs2'
     transs1 = mkTranss transs1' assoc1
