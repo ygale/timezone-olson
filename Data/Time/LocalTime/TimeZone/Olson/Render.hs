@@ -19,7 +19,7 @@ that was originally distributed by the author together with this file.
 
 module Data.Time.LocalTime.TimeZone.Olson.Render
 (
- -- * Rendering Olson timezone data
+ -- * Rendering Olson timezone files
  -- | If any of the transition times or leap second times specified
  -- require more than a 32-bit integer to represent as a Unix
  -- timestamp, or if a POSIX-style TZ string is specified, timezone

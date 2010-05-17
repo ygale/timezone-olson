@@ -21,14 +21,9 @@ originally distributed by the author together with this file.
 
 module Data.Time.LocalTime.TimeZone.Olson
 (
- -- * Olson timezone datatypes
- module Data.Time.LocalTime.TimeZone.Olson.Types,
-
- -- * Parsing Olson timezone files
  module Data.Time.LocalTime.TimeZone.Olson.Parse,
-
- -- * Rendering Olson timezone files
- module Data.Time.LocalTime.TimeZone.Olson.Render
+ module Data.Time.LocalTime.TimeZone.Olson.Render,
+ module Data.Time.LocalTime.TimeZone.Olson.Types
 )
 where
 

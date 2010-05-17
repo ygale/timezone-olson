@@ -22,6 +22,7 @@ that was originally distributed by the author together with this file.
 
 module Data.Time.LocalTime.TimeZone.Olson.Parse
 (
+ -- * Parsing Olson timezone files
  getTimeZoneSeriesFromOlsonFile,
  getOlsonFromFile,
  olsonToTimeZoneSeries,
