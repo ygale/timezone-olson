@@ -13,11 +13,10 @@
 -- converting the parsed data into @TimeZoneSeries@ and @TimeZone@
 -- objects.
 
-{-
-Copyright (c) 2010 Yitzchak Gale. All rights reserved.
-For licensing information, see the file LICENSE that was
-originally distributed by the author together with this file.
--}
+{- Copyright (c) 2010 Yitzchak Gale. All rights reserved.
+For licensing information, see the BSD3-style license in the file
+LICENSE that was originally distributed by the author together with
+this file. -}
 
 module Data.Time.LocalTime.TimeZone.Olson
 (

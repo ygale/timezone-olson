@@ -12,10 +12,10 @@
 -- tzfile(5) man page on Unix-like systems. For more information
 -- about this format, see http://www.twinsun.com/tz/tz-link.htm.
 
-{- Copyright (c) 2010 Yitzchak Gale. All rights reserved.  For
-licensing information, see the BSD3-style license in the file LICENSE
-that was originally distributed by the author together with this file.
--}
+{- Copyright (c) 2010 Yitzchak Gale. All rights reserved.
+For licensing information, see the BSD3-style license in the file
+LICENSE that was originally distributed by the author together with
+this file. -}
 
 module Data.Time.LocalTime.TimeZone.Olson.Render
 (
