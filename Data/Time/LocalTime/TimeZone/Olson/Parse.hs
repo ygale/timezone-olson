@@ -44,7 +44,7 @@ import Data.Maybe (listToMaybe, fromMaybe)
 import Data.Word (Word8)
 import Data.Int (Int32, Int64)
 import Data.Typeable (Typeable)
-import Control.Monad (guard, replicateM, replicateM_)
+import Control.Monad (guard, replicateM, replicateM_, when)
 import Control.Exception.Extensible (try, throw, Exception, ErrorCall)
 
 -- | An exception indicating that the binary data being parsed was not
@@ -91,26 +91,23 @@ formatError fp e = throwOlson fp $ show e
 -- | A binary parser for binary Olson timezone files
 getOlson :: Get OlsonData
 getOlson = do
-    getByteString 4
-      >>= verify ((== "TZif") . toASCII . B.unpack) "missing magic number"
-    version <- getWord8
-      >>= verify (`elem` [0, 50]) "invalid version number"
-    replicateM_ 15 getWord8 -- padding nulls
-    getOlsonParts version
-
--- There is one part for Version 1 format data, and two parts and a POSIX
--- TZ string for Version 2 format data
-getOlsonParts :: Word8 -> Get OlsonData
-getOlsonParts 0  = getOlsonPart get32bitInteger
-getOlsonParts 50 = do part1 <- getOlsonPart get32bitInteger
-                      part2 <- getOlsonPart get64bitInteger
-                      posixTZ <- getPosixTZ
-                      return $ part1 `mappend` part2 `mappend` posixTZ
-getOlsonParts _  = error "Invalid version number" -- never reached
+    (version, part1) <- getOlsonPart True get32bitInteger
+    -- There is one part for Version 1 format data, and two parts and a POSIX
+    -- TZ string for Version 2 format data
+    case version of
+      0  -> return part1
+      50 -> do (_, part2) <- getOlsonPart False get64bitInteger
+               posixTZ <- getPosixTZ
+               return $ part1 `mappend` part2 `mappend` posixTZ
+      _  -> verify (const False) "invalid version number" undefined
 
 -- Parse the part of an Olson file that contains timezone data
-getOlsonPart :: Integral a => Get a -> Get OlsonData
-getOlsonPart getTime = do
+getOlsonPart :: Integral a => Bool -> Get a -> Get (Word8, OlsonData)
+getOlsonPart verifyMagic getTime = do
+    magic <- fmap (toASCII . B.unpack) $ getByteString 4
+    when verifyMagic $ verify_ (== "TZif") "missing magic number" magic
+    version <- getWord8
+    replicateM_ 15 getWord8 -- padding nulls
     tzh_ttisgmtcnt <- get32bitInt
     tzh_ttisstdcnt <- get32bitInt
     tzh_leapcnt <- get32bitInt
@@ -124,13 +121,16 @@ getOlsonPart getTime = do
     leaps <- replicateM tzh_leapcnt $ getLeapInfo getTime
     isstds <- replicateM tzh_ttisstdcnt getBool
     isgmts <- replicateM tzh_ttisgmtcnt getBool
-    return $ OlsonData
-      (zipWith Transition times indexes)
-      (map (flip lookupAbbr abbr_chars) . zipWith setTtype ttinfos .
-         (++ repeat UnknownType) $
-         zipWith boolsToTType (map Just isstds ++ repeat Nothing) isgmts)
-      leaps
-      Nothing
+    return
+      (version,
+       OlsonData
+         (zipWith Transition times indexes)
+         (map (flip lookupAbbr abbr_chars) . zipWith setTtype ttinfos .
+           (++ repeat UnknownType) $
+           zipWith boolsToTType (map Just isstds ++ repeat Nothing) isgmts)
+         leaps
+         Nothing
+      )
   where
     lookupAbbr (TtInfo gmtoff isdst ttype abbrind) =
       TtInfo gmtoff isdst ttype . takeWhile (/= '\NUL') . drop abbrind
@@ -201,6 +201,11 @@ toASCII = map (toEnum . fromIntegral)
 verify :: Monad m => (a -> Bool)  -> String -> a -> m a
 verify pred msg val
  | pred val  = return val
+ | otherwise = error msg
+
+verify_ :: Monad m => (a -> Bool)  -> String -> a -> m ()
+verify_ pred msg val
+ | pred val  = return ()
  | otherwise = error msg
 
 throwOlson :: FilePath -> String -> IO a

@@ -81,12 +81,7 @@ renderOlsonToFile fp = L.writeFile fp . runPut . putOlson
 -- | Render Olson timezone data in binary Olson timezone file format
 -- as a lazy @ByteString@
 putOlson :: OlsonData -> Put
-putOlson olson = do
-    putASCII "TZif"
-    putWord8 version
-    putByteString . B.pack $ replicate 15 0 -- padding nulls
-    putOlsonParts version olson1 olson2 posix
-    flush
+putOlson olson = putOlsonParts version olson1 olson2 posix >> flush
   where
     (olson1, olson2, posix) = splitOlson olson
     version
@@ -122,14 +117,17 @@ splitOlson (OlsonData transs ttinfos leaps posix) =
       sortBy (comparing fst) $ zip (map (flip lookup assoc) [0..]) ttinfos
 
 putOlsonParts :: Word8 -> OlsonData -> OlsonData -> Maybe String -> Put
-putOlsonParts 0 olson1 _      _     = putOlsonPart put32bitIntegral olson1
-putOlsonParts _ olson1 olson2 posix = do
-  putOlsonPart put32bitIntegral olson1
-  putOlsonPart put64bitIntegral olson2
+putOlsonParts 0  olson1 _      _     = putOlsonPart 0 put32bitIntegral olson1
+putOlsonParts v2 olson1 olson2 posix = do
+  putOlsonPart v2 put32bitIntegral olson1
+  putOlsonPart v2 put64bitIntegral olson2
   putPosixTZ posix
 
-putOlsonPart :: (Integer -> Put) -> OlsonData -> Put
-putOlsonPart putTime (OlsonData transs ttinfos leaps _) = do
+putOlsonPart :: Word8 -> (Integer -> Put) -> OlsonData -> Put
+putOlsonPart version putTime (OlsonData transs ttinfos leaps _) = do
+    putASCII "TZif"
+    putWord8 version
+    putByteString . B.pack $ replicate 15 0 -- padding nulls
     replicateM_ 2 $ putCount ttinfosWithTtype
                        -- tzh_ttisgmtcnt
                        -- tzh_ttisstdcnt
