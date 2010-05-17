@@ -15,6 +15,7 @@ import Data.Maybe (listToMaybe)
 import System.Environment (getArgs)
 import System.Exit (exitWith, exitSuccess, ExitCode(ExitFailure))
 import System.Locale (defaultTimeLocale)
+import Control.Monad (guard)
 
 version :: IO a
 version = do
@@ -33,7 +34,8 @@ illegalOpt opt = do
   putStrLn $ "hzdump: illegal option -- " ++ [opt]
   usage
 
-data Option = Version | Illegal Char | Verbose (Maybe Integer) | Now
+data Option = Version | Illegal Char |
+              Verbose (Maybe Integer, Maybe Integer) | Now
   deriving (Eq, Ord, Show)
 
 main = do
@@ -41,7 +43,7 @@ main = do
     (getTimes, displayTime) <- case opts of
       Version     -> version
       Illegal opt -> illegalOpt opt
-      Verbose yr  -> return (transitionTimesUntil yr, displayVerbose)
+      Verbose rng -> return (transitionTimes rng, displayVerbose)
       _           -> do now <- getCurrentTime
                         return (const [now], displayConcise)
     tzss <- mapM getZone zones
@@ -56,16 +58,25 @@ main = do
 
 parseArgs :: [String] -> (Option, [FilePath])
 parseArgs args | "--version" `elem` args = (Version, [])
-parseArgs args = getOpts False Nothing args
+parseArgs args = getOpts False (Nothing, Nothing) args
   where
     getOpts _ cutoff  ("-v":args)   = getOpts True cutoff args
-    getOpts v Nothing ("-c":c:args) = maybe (Illegal 'c', [])
-                                      (\y -> getOpts v (Just y) args) $
-                                      maybeRead c
+    getOpts v _       ("-c":c:args) = maybe (Illegal 'c', [])
+                                      (\y -> getOpts v y args) $
+                                      parseCutoff c
     getOpts v cutoff  ("--":zones ) = (opts v cutoff, zones)
     getOpts _ _       (('-':x:_):_) = (Illegal x, [])
     getOpts v cutoff  zones         = (opts v cutoff, zones)
+
     opts v cutoff = if v then Verbose cutoff else Now
+
+    parseCutoff c = let p0  = listToMaybe $ reads c
+                        los = fmap fst p0
+                        his = do str <- fmap snd p0
+                                 let (comma, str1) = splitAt 1 str
+                                 guard $ comma == ","
+                                 maybeRead str1
+                    in los >> Just (maybe (Nothing, los) ((,) los . Just) his)
 
 displayConcise :: TimeZoneSeries -> UTCTime -> String
 displayConcise tzs t = formatTime defaultTimeLocale format $
@@ -79,9 +90,11 @@ displayVerbose tzs t = concat [displayConcise utcTZ t, " = ",
   where
     isdst = timeZoneSummerOnly $ timeZoneFromSeries tzs t
 
-transitionTimesUntil :: Maybe Integer -> TimeZoneSeries -> [UTCTime]
-transitionTimesUntil yr =
-    maybe id (dropWhile . (>=)) (fmap happyNewYear yr) .
+transitionTimes :: (Maybe Integer, Maybe Integer) -> TimeZoneSeries ->
+                   [UTCTime]
+transitionTimes (lo, hi) =
+    maybe id (takeWhile . (>)) (fmap happyNewYear hi) .
+    maybe id (dropWhile . (>)) (fmap happyNewYear lo) .
     addBugs . addPrevSecond . actualTransitions
   where
     happyNewYear y = UTCTime (fromGregorian y 1 1) 0
