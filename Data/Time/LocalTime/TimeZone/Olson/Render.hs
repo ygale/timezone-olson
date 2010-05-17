@@ -32,6 +32,9 @@ module Data.Time.LocalTime.TimeZone.Olson.Render
 where
 
 import Data.Time.LocalTime.TimeZone.Olson.Types
+import Data.Time.LocalTime.TimeZone.Series (TimeZoneSeries(TimeZoneSeries))
+import Data.Time (TimeZone(TimeZone, timeZoneSummerOnly, timeZoneName))
+import Data.Time.Clock.POSIX (utcTimeToPOSIXSeconds)
 import Data.Binary.Put (Put, runPut, putByteString, putWord8, flush,
                         putWord32be, putWord64be)
 import qualified Data.ByteString as B
@@ -39,10 +42,37 @@ import qualified Data.ByteString.Lazy as L
 import Data.List (partition, sortBy, sort, group)
 import Data.Ord (comparing)
 import Data.Word (Word8)
-import Data.Maybe (listToMaybe, maybeToList, isNothing, fromMaybe)
+import Data.Maybe (listToMaybe, maybeToList, isNothing, fromMaybe, catMaybes)
 import Data.Monoid (mempty)
 import Control.Monad (guard, replicateM_)
 
+-- | Render a @TimeZoneSeries@ as a binary Olson timezone file.
+renderTimeZoneSeriesToOlsonFile :: FilePath -> TimeZoneSeries -> IO ()
+renderTimeZoneSeriesToOlsonFile fp = renderOlsonToFile fp .
+  fromMaybe (error "Cannot render TimeZoneSeries: default is summer time") .
+  timeZoneSeriesToOlson
+
+-- | Convert a @TimeZoneSeries@ to @OlsonData@ for rendering.
+timeZoneSeriesToOlson :: TimeZoneSeries -> Maybe OlsonData
+timeZoneSeriesToOlson (TimeZoneSeries dflt pairs)
+ | timeZoneSummerOnly dflt && not (all timeZoneSummerOnly $ map snd pairs)
+             = Nothing
+ | otherwise = Just $
+    OlsonData
+      [Transition secs ttinfo |
+         (t, tzs) <- pairs,
+         let secs = round $ utcTimeToPOSIXSeconds t,
+         ttinfo <- maybeToList $ lookup (mkTT tzs) ttAssocs]
+      ttinfos
+      []
+      Nothing
+  where
+    mkTT (TimeZone offset issdst abbr) =
+      TtInfo (offset*60) issdst Wall abbr
+    dfltTT = mkTT dflt
+    ttAssocs = (dfltTT, 0) :
+               zip (filter (/= dfltTT) $ map (mkTT . snd) pairs) [1..]
+    ttinfos = map fst ttAssocs
 
 -- | Render Olson timezone data as a binary Olson timezone file
 renderOlsonToFile :: FilePath -> OlsonData -> IO ()
