@@ -68,8 +68,9 @@ data Transition =
        Transition
          {transTime :: Integer, -- ^ Unix timestamp indicating the time
                                 -- when the clocks change
-          transIndex :: Int}    -- ^ 0-based index in the list of @TtInfo@
+          transIndex :: Int     -- ^ 0-based index in the list of @TtInfo@
                                 -- that describes the new time
+         }
   deriving (Eq, Show)
 
 -- | A @TransitionType@ is historical information about whether the
@@ -94,7 +95,8 @@ data TtInfo abbr =
                             -- in seconds
           tt_isdst :: Bool, -- ^ True if local clocks are summer time
           tt_ttype :: TransitionType,
-          tt_abbr :: abbr} -- ^ The timezone abbreviation string.
+          tt_abbr :: abbr   -- ^ The timezone abbreviation string.
+         }
   deriving (Eq, Show)
 
 -- | Olson timezone files can contain leap second specifications, though
@@ -103,6 +105,7 @@ data LeapInfo =
        LeapInfo
          {leapTime :: Integer, -- ^ A Unix timestamp indicating the time
                                -- that the leap second occurred
-          leapOffset :: Int}   -- ^ The new total offset of UTC from UT1
+          leapOffset :: Int    -- ^ The new total offset of UTC from UT1
                                -- after this leap second
+         }
   deriving (Eq, Show)
