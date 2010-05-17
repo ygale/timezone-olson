@@ -125,9 +125,8 @@ getOlsonPart verifyMagic getTime = do
       (version,
        OlsonData
          (zipWith Transition times indexes)
-         (map (flip lookupAbbr abbr_chars) . zipWith setTtype ttinfos .
-           (++ repeat UnknownType) $
-           zipWith boolsToTType (map Just isstds ++ repeat Nothing) isgmts)
+         (map (flip lookupAbbr abbr_chars) . zipWith setTtype ttinfos $
+           zipWithExtend boolsToTType False False isstds isgmts)
          leaps
          Nothing
       )
@@ -135,11 +134,18 @@ getOlsonPart verifyMagic getTime = do
     lookupAbbr (TtInfo gmtoff isdst ttype abbrind) =
       TtInfo gmtoff isdst ttype . takeWhile (/= '\NUL') . drop abbrind
     setTtype ttinfo ttype = ttinfo {tt_ttype = ttype}
-    boolsToTType _     isgmt | isgmt = UTC
-    boolsToTType isstd _             = maybe UnknownType stdOrWall isstd
-    stdOrWall isstd
-     | isstd     = Std
-     | otherwise = Wall
+    boolsToTType _     isgmt | isgmt     = UTC
+    boolsToTType isstd _
+                             | isstd     = Std
+                             | otherwise = Wall
+
+-- A variant of zipWith whose result is the length of the longer
+-- rather than the shorter list, by extending the shorter list with
+-- a default value
+zipWithExtend :: (a -> b -> c) -> a -> b -> [a] -> [b] -> [c]
+zipWithExtend f x0 y0 (x:xs) (y:ys) = f x y : zipWithExtend f x0 y0 xs ys
+zipWithExtend f x0 _  []     ys     = map (f x0) ys
+zipWithExtend f _  y0 xs     _      = map (flip f y0) xs
 
 -- Parse a POSIX-style TZ string.
 -- We don't try to understand the TZ string, we just pass it along whole.
@@ -160,7 +166,7 @@ getTtInfo = do
     gmtoff <- get32bitInt
     isdst <- getBool
     abbrind <- get8bitInt
-    return $ TtInfo gmtoff isdst UnknownType abbrind
+    return $ TtInfo gmtoff isdst Wall abbrind
 
 -- Parse leap second info. (usually not used)
 getLeapInfo :: Integral a => Get a -> Get LeapInfo

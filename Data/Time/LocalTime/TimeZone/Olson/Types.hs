@@ -80,7 +80,7 @@ data Transition =
 -- zone. This historical trivia may seem rather boring, but
 -- unfortunately it is needed to interpret a POSIX-style TZ string
 -- timezone specification correctly.
-data TransitionType = Std | Wall | UTC | UnknownType
+data TransitionType = Std | Wall | UTC
   deriving (Eq, Ord, Show)
 
 -- | A @TtInfo@ is a specification of local time in a timezone for
