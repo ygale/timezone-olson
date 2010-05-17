@@ -148,10 +148,11 @@ putOlsonPart version putTime (OlsonData transs ttinfos leaps _) = do
     ttinfosWithTtype = takeWhile ((<= UTC) . tt_ttype) ttinfosIndexed
     abbrStrings = uniq . sort $ map tt_abbr ttinfos
     abbrChars = concatMap (++ "\NUL") abbrStrings
+    abbrAssocs = zip abbrStrings . scanl (+) 0 $
+                 map ((+ 1) . length) abbrStrings
     ttinfosIndexed = [TtInfo gmtoff isdst ttype i |
       TtInfo gmtoff isdst ttype abbr <- ttinfos,
-      i <- maybeToList . lookup abbr . zip abbrStrings .
-           scanl (+) 0 $ map ((+ 1) . length) abbrStrings]
+      i <- maybeToList $ lookup abbr abbrAssocs]
 
 putPosixTZ :: Maybe String -> Put
 putPosixTZ posix = do
