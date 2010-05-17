@@ -25,6 +25,8 @@ module Data.Time.LocalTime.TimeZone.Olson.Render
  -- timestamp, or if a POSIX-style TZ string is specified, timezone
  -- data is rendered using Version 2 format. Otherwise, the timezone data
  -- is rendered using Version 1 format.
+ renderTimeZoneSeriesToOlsonFile,
+ timeZoneSeriesToOlson,
  renderOlsonToFile,
  putOlson,
  splitOlson
