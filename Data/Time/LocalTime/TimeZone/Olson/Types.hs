@@ -109,7 +109,7 @@ data TtInfo abbr =
   deriving (Eq, Ord, Show)
 
 -- | Olson timezone files can contain leap second specifications, though
--- the official files have not done so since the late 1980s.
+-- most do not.
 data LeapInfo =
        LeapInfo
          {leapTime :: Integer, -- ^ A Unix timestamp indicating the time
