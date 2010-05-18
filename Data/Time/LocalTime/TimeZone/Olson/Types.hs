@@ -10,7 +10,7 @@
 -- Data types to represent timezone data as used in Olson timezone
 -- files, and as specified by the tzfile(5) man page on Unix-like
 -- systems. For more information about this format, see
--- http://www.twinsun.com/tz/tz-link.htm.
+-- <http://www.twinsun.com/tz/tz-link.htm>.
 --
 -- Both Version 1 and Version 2 timezone data can be represented.
 

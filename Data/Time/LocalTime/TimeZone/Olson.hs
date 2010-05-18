@@ -9,7 +9,7 @@
 -- A parser and renderer for binary Olson timezone files whose format
 -- are specified by the tzfile(5) man page on Unix-like systems. For
 -- more information about this format, see
--- http://www.twinsun.com/tz/tz-link.htm. Functions are provided for
+-- <http://www.twinsun.com/tz/tz-link.htm>. Functions are provided for
 -- converting the parsed data into @TimeZoneSeries@ and @TimeZone@
 -- objects.
 

@@ -7,10 +7,10 @@
 -- Maintainer  :  Yitzchak Gale <gale@sefer.org>
 -- Portability :  portable
 --
--- Render Olson timezone data in the standard binary format as
--- used in Olson timezone files, and as specified by the
--- tzfile(5) man page on Unix-like systems. For more information
--- about this format, see http://www.twinsun.com/tz/tz-link.htm.
+-- Render Olson timezone data in the standard binary format as used in
+-- Olson timezone files, and as specified by the tzfile(5) man page on
+-- Unix-like systems. For more information about this format, see
+-- <http://www.twinsun.com/tz/tz-link.htm>.
 
 {- Copyright (c) 2010 Yitzchak Gale. All rights reserved.
 For licensing information, see the BSD3-style license in the file
