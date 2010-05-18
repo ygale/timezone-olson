@@ -53,11 +53,14 @@ import Control.Monad (mplus)
 -- timestamp values. The POSIX TZ string, if present, can only be rendered
 -- in a Version 2 file, and appears after both parts of the timezone data.
 data OlsonData =
-    OlsonData
-      [Transition]
-      [TtInfo String]
-      [LeapInfo]
-      (Maybe String) -- ^ Optional POSIX TZ string for the last @Transition@
+    OlsonData {
+      olsonTransitions :: [Transition],
+      olsonTypes ::       [TtInfo String],
+      olsonLeaps ::       [LeapInfo],
+      olsonPosixTZ ::     (Maybe String) 
+                            -- ^ Optional POSIX TZ string for
+                            -- times after the last @Transition@
+    }
   deriving (Eq, Show)
 
 instance Monoid OlsonData where
