@@ -26,7 +26,13 @@ module Data.Time.LocalTime.TimeZone.Olson.Types
  Transition(..),
  TransitionType(..),
  TtInfo(..),
- LeapInfo(..)
+ LeapInfo(..),
+
+ -- ** Size limits for Olson timezone data
+ SizeLimits(..),
+ defaultLimits,
+ limitsNoSolar,
+ noLimits
 )
 where
 
@@ -109,3 +115,34 @@ data LeapInfo =
                                -- after this leap second
          }
   deriving (Eq, Show)
+
+-- | The reference C implentation imposes size limits on the data
+-- structures in a timezone file.
+data SizeLimits = SizeLimits
+       {maxTimes :: Maybe Int,     -- ^ The maximum number of transition times
+        maxTypes :: Maybe Int,     -- ^ The maximum number of TtInfo
+                                   -- clock settings
+        maxAbbrChars :: Maybe Int, -- ^ The maximum total number of bytes in
+                                   -- all timezone abbreviations.
+        maxLeaps :: Maybe Int      -- ^ The maximum number of leap second
+                                   -- specifications.
+       }
+
+-- | The size limits in @defaultLimits@ are taken from the file
+-- tzfile.h from tzcode version 2010f. These are the limits for the C
+-- implementation on many platforms.
+defaultLimits :: SizeLimits
+defaultLimits = SizeLimits { maxTimes = Just 1200, maxTypes = Just 256,
+                             maxAbbrChars = Just 50, maxLeaps = Just 50 }
+
+-- | @limitsNoSolar@ contains the tighter size limits imposed on some
+-- platforms that do not allow timezones that are based on solar time.
+limitsNoSolar :: SizeLimits
+limitsNoSolar = defaultLimits { maxTypes = Just 20 }
+
+-- | @noLimits@ imoses no size limits. If you use @noLimits@ when parsing,
+-- you may exhaust all available memory when reading a faulty or
+-- malicious timezone file. If you use @noLimits@ when rendering, the
+-- rendered timezone file might not be readable on some sytems.
+noLimits :: SizeLimits
+noLimits = SizeLimits Nothing Nothing Nothing Nothing

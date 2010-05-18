@@ -74,36 +74,47 @@ olsonToTimeZoneSeries _ = Nothing
 -- it into a @TimeZoneSeries@ for use together with the types and
 -- fucntions of "Data.Time". This is the function from this module
 -- for which you are most likely to have use.
+--
+-- If the values in the Olson timezone file exceed the standard size
+-- limits (see 'defaultLimits'), this function throws an
+-- exception. For other behavior, use 'getOlson' and
+-- 'Data.Binary.Get.runGet' directly.
 getTimeZoneSeriesFromOlsonFile :: FilePath -> IO TimeZoneSeries
 getTimeZoneSeriesFromOlsonFile fp = getOlsonFromFile fp >>=
   maybe (throwOlson fp "no timezone found in OlsonData") return .
     olsonToTimeZoneSeries
 
 -- | Parse a binary Olson timezone file.
+--
+-- If the values in the Olson timezone file exceed the standard size
+-- limits (see 'defaultLimits'), this function throws an
+-- exception. For other behavior, use 'getOlson' and
+-- 'Data.Binary.Get.runGet' directly.
 getOlsonFromFile :: FilePath -> IO OlsonData
 getOlsonFromFile fp = do
-    e <- try . fmap (runGet getOlson) $ L.readFile fp
+    e <- try . fmap (runGet $ getOlson defaultLimits) $ L.readFile fp
     either (formatError fp) return e
 
 formatError :: FilePath -> ErrorCall -> IO a
 formatError fp e = throwOlson fp $ show e
 
 -- | A binary parser for binary Olson timezone files
-getOlson :: Get OlsonData
-getOlson = do
-    (version, part1) <- getOlsonPart True get32bitInteger
+getOlson :: SizeLimits -> Get OlsonData
+getOlson limits = do
+    (version, part1) <- getOlsonPart True limits get32bitInteger
     -- There is one part for Version 1 format data, and two parts and a POSIX
     -- TZ string for Version 2 format data
     case version of
       0  -> return part1
-      50 -> do (_, part2) <- getOlsonPart False get64bitInteger
+      50 -> do (_, part2) <- getOlsonPart False limits get64bitInteger
                posixTZ <- getPosixTZ
                return $ part1 `mappend` part2 `mappend` posixTZ
       _  -> verify (const False) "invalid version number" undefined
 
 -- Parse the part of an Olson file that contains timezone data
-getOlsonPart :: Integral a => Bool -> Get a -> Get (Word8, OlsonData)
-getOlsonPart verifyMagic getTime = do
+getOlsonPart :: Integral a => Bool -> SizeLimits -> Get a ->
+                Get (Word8, OlsonData)
+getOlsonPart verifyMagic limits getTime = do
     magic <- fmap (toASCII . B.unpack) $ getByteString 4
     when verifyMagic $ verify_ (== "TZif") "missing magic number" magic
     version <- getWord8
@@ -111,9 +122,15 @@ getOlsonPart verifyMagic getTime = do
     tzh_ttisgmtcnt <- get32bitInt
     tzh_ttisstdcnt <- get32bitInt
     tzh_leapcnt <- get32bitInt
+      >>= verify (withinLimit maxLeaps) "too many leap second specifications"
     tzh_timecnt <- get32bitInt
+      >>= verify (withinLimit maxTimes) "too many timezone transitions"
     tzh_typecnt <- get32bitInt
+      >>= verify (withinLimit maxTypes) "too many timezone type specifications"
+    verify (withinLimit maxTypes) "too many isgmt specifiers" tzh_ttisgmtcnt
+    verify (withinLimit maxTypes) "too many isstd specifiers" tzh_ttisstdcnt
     tzh_charcnt <- get32bitInt
+      >>= verify (withinLimit maxAbbrChars) "too many tilezone specifiers"
     times <- fmap (map toInteger) $ replicateM tzh_timecnt getTime
     indexes <- replicateM tzh_timecnt get8bitInt
     ttinfos <- replicateM tzh_typecnt getTtInfo
@@ -131,6 +148,7 @@ getOlsonPart verifyMagic getTime = do
          Nothing
       )
   where
+    withinLimit limit value = maybe True (value <=) $ limit limits
     lookupAbbr (TtInfo gmtoff isdst ttype abbrind) =
       TtInfo gmtoff isdst ttype . takeWhile (/= '\NUL') . drop abbrind
     setTtype ttinfo ttype = ttinfo {tt_ttype = ttype}

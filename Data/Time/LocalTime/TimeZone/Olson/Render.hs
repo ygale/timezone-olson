@@ -28,6 +28,7 @@ module Data.Time.LocalTime.TimeZone.Olson.Render
  renderTimeZoneSeriesToOlsonFile,
  timeZoneSeriesToOlson,
  renderOlsonToFile,
+ verifyOlsonLimits,
  putOlson,
  splitOlson
 )
@@ -46,9 +47,15 @@ import Data.Ord (comparing)
 import Data.Word (Word8)
 import Data.Maybe (listToMaybe, maybeToList, isNothing, fromMaybe, catMaybes)
 import Data.Monoid (mempty)
-import Control.Monad (guard, replicateM_)
+import Control.Monad (guard, replicateM_, unless)
 
 -- | Render a @TimeZoneSeries@ as a binary Olson timezone file.
+--
+-- If the values in the Olson timezone data exceed the standard size
+-- limits (see 'defaultLimits'), this function throws an
+-- exception. For other behavior, use 'timeZoneSeriesToOlson',
+-- 'verifyOlsonLimits', 'putOlson' and 'Data.Binary.Put.runPut'
+-- directly.
 renderTimeZoneSeriesToOlsonFile :: FilePath -> TimeZoneSeries -> IO ()
 renderTimeZoneSeriesToOlsonFile fp = renderOlsonToFile fp .
   fromMaybe (error "Cannot render TimeZoneSeries: default is summer time") .
@@ -76,9 +83,30 @@ timeZoneSeriesToOlson (TimeZoneSeries dflt pairs)
       zip (uniq . sort . filter (/= dfltTT) $ map (mkTT . snd) pairs) [1..]
     ttinfos = map fst ttAssocs
 
+-- | Check whether @OlsonData@ is within size limits.
+verifyOlsonLimits :: SizeLimits -> OlsonData -> Bool
+verifyOlsonLimits limits (OlsonData transs ttinfos leaps _) =
+    withinLimit maxTimes transs &&
+    withinLimit maxTypes ttinfos &&
+    withinLimit maxLeaps leaps &&
+    withinLimit maxAbbrChars abbrChars
+  where
+    withinLimit limit items = maybe True (null . flip drop items) $
+                              limit limits
+    abbrChars = concat abbrStrs ++ map (const '\NUL') abbrStrs
+    abbrStrs = map tt_abbr ttinfos
+
 -- | Render Olson timezone data as a binary Olson timezone file
+--
+-- If the values in the Olson timezone data exceed the standard size
+-- limits (see 'defaultLimits'), this function throws an
+-- exception. For other behavior, use 'verifyOlsonLimits', 'putOlson'
+-- and 'Data.Binary.Put.runPut' directly.
 renderOlsonToFile :: FilePath -> OlsonData -> IO ()
-renderOlsonToFile fp = L.writeFile fp . runPut . putOlson
+renderOlsonToFile fp olson = do
+  unless (verifyOlsonLimits defaultLimits olson) $
+    error "Olson timezone data exceeds size limits"
+  L.writeFile fp . runPut . putOlson $ olson
 
 -- | Render Olson timezone data in binary Olson timezone file format
 -- as a lazy @ByteString@
