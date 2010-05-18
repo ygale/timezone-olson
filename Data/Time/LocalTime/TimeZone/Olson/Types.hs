@@ -143,9 +143,9 @@ defaultLimits = SizeLimits { maxTimes = Just 1200, maxTypes = Just 256,
 limitsNoSolar :: SizeLimits
 limitsNoSolar = defaultLimits { maxTypes = Just 20 }
 
--- | @noLimits@ imoses no size limits. If you use @noLimits@ when parsing,
--- you may exhaust all available memory when reading a faulty or
--- malicious timezone file. If you use @noLimits@ when rendering, the
--- rendered timezone file might not be readable on some sytems.
+-- | @noLimits@ imposes no size limits. If you use @noLimits@ when
+-- parsing, you may exhaust all available memory when reading a faulty
+-- or malicious timezone file. If you use @noLimits@ when rendering,
+-- the rendered timezone file might not be readable on some systems.
 noLimits :: SizeLimits
 noLimits = SizeLimits Nothing Nothing Nothing Nothing
