@@ -7,16 +7,26 @@ Name:                timezone-olson
 -- The package version. See the Haskell package versioning policy
 -- (http://www.haskell.org/haskellwiki/Package_versioning_policy) for
 -- standards guiding when and how versions should be incremented.
-Version:             0.1
+Version:             0.1.0
 
 -- A short (one-line) description of the package.
 Synopsis:            A pure Haskell parser and renderer for binary Olson timezone files
 
 -- A longer description of the package.
--- Description:         
+Description:         A parser and renderer for binary Olson timezone
+                     files whose format is specified by the tzfile(5)
+                     man page on Unix-like systems. For more
+                     information about this format, see
+                     <http://www.twinsun.com/tz/tz-link.htm>. Functions
+                     are provided for converting the parsed data into
+                     'TimeZoneSeries' objects from the timezone-series
+                     package. On many platforms, binary Olson timezone
+                     files suitable for use with this package are
+                     available in the directory /usr/share/zoneinfo
+                     and its subdirectories on your computer.
 
 -- URL for the project homepage or repository.
-Homepage:            http://community.haskell.org/timezone
+Homepage:            http://projects.haskell.org/time-ng/
 
 -- The license under which the package is released.
 License:             BSD3
@@ -29,10 +39,10 @@ Author:              Yitzchak Gale
 
 -- An email address to which users can send suggestions, bug reports,
 -- and patches.
-Maintainer:          gale@sefer.org
+Maintainer:          yitz@community.haskell.org
 
 -- A copyright notice.
--- Copyright:           
+Copyright:           Copyright (c) 2010 Yitzchak Gale. All rights reserved.
 
 Category:            Data
 
@@ -40,7 +50,7 @@ Build-type:          Simple
 
 -- Extra files to be distributed with the package, such as examples or
 -- a README.
--- Extra-source-files:  
+Extra-source-files:  README, catTZ.hs, hzdump.hs
 
 -- Constraint on the version of Cabal needed to build this package.
 Cabal-version:       >=1.2
@@ -51,7 +61,9 @@ Library
   Exposed-modules:     Data.Time.LocalTime.TimeZone.Olson, Data.Time.LocalTime.TimeZone.Olson.Parse, Data.Time.LocalTime.TimeZone.Olson.Render, Data.Time.LocalTime.TimeZone.Olson.Types
   
   -- Packages needed in order to build this package.
-  -- Build-depends:       
+  Build-depends:       base 3.* || 4.*,
+                       timezone-series 0.1.*,
+                       extensible-exceptions 0.1.*
   
   -- Modules not exported by this package.
   -- Other-modules:       
