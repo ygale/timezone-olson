@@ -8,12 +8,11 @@
 -- Maintainer  :  Yitzchak Gale <gale@sefer.org>
 -- Portability :  portable
 --
--- A parser for binary Olson timezone files whose format are specified
+-- A parser for binary Olson timezone files whose format is specified
 -- by the tzfile(5) man page on Unix-like systems. For more
 -- information about this format, see
 -- <http://www.twinsun.com/tz/tz-link.htm>. Functions are provided for
--- converting the parsed data into @TimeZoneSeries@ and @TimeZone@
--- objects.
+-- converting the parsed data into 'TimeZoneSeries' objects.
 
 {- Copyright (c) 2010 Yitzchak Gale. All rights reserved.
 For licensing information, see the BSD3-style license in the file
