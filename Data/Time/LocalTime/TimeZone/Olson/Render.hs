@@ -156,20 +156,20 @@ putOlsonParts v2 olson1 olson2 posix = do
 
 putOlsonPart :: Word8 -> (Integer -> Put) -> OlsonData -> Put
 putOlsonPart version putTime (OlsonData transs ttinfos leaps _) = do
-    putASCII "TZif"
+    putASCII "magic number" "TZif"
     putWord8 version
     putByteString . B.pack $ replicate 15 0 -- padding nulls
     replicateM_ 2 $ putCount ttinfosWithTtype
-                       -- tzh_ttisgmtcnt
-                       -- tzh_ttisstdcnt
-    putCount leaps     -- tzh_leapcnt
-    putCount transs    -- tzh_timecnt
-    putCount ttinfos   -- tzh_typecnt
-    putCount abbrChars -- tzh_charcnt
+                               -- tzh_ttisgmtcnt
+                               -- tzh_ttisstdcnt
+    putCount leaps             -- tzh_leapcnt
+    putCount transs            -- tzh_timecnt
+    putCount ttinfos           -- tzh_typecnt
+    put32bitIntegral abbrChars -- tzh_charcnt
     mapM_ (putTime         . transTime ) transs
     mapM_ (put8bitIntegral . transIndex) transs
     mapM_ putTtInfo ttinfosIndexed
-    putASCII abbrChars
+    mapM_ putAbbr abbrStrings
     mapM_ (putLeapInfo putTime) leaps
     mapM_ (putBool . (== Std) . tt_ttype) ttinfosWithTtype -- isstd
     mapM_ (putBool . (== UTC) . tt_ttype) ttinfosWithTtype -- isgmt
@@ -177,7 +177,8 @@ putOlsonPart version putTime (OlsonData transs ttinfos leaps _) = do
     putCount = put32bitIntegral . length
     ttinfosWithTtype = takeWhile ((<= UTC) . tt_ttype) ttinfosIndexed
     abbrStrings = uniq . sort $ map tt_abbr ttinfos
-    abbrChars = concatMap (++ "\NUL") abbrStrings
+    abbrChars = sum (map length abbrStrings) + length abbrStrings
+    putAbbr abbr = putASCII "time zone abbreviation" abbr >> putWord8 0
     abbrAssocs = zip abbrStrings . scanl (+) 0 $
                  map ((+ 1) . length) abbrStrings
     ttinfosIndexed = [TtInfo gmtoff isdst ttype i |
@@ -187,7 +188,7 @@ putOlsonPart version putTime (OlsonData transs ttinfos leaps _) = do
 putPosixTZ :: Maybe String -> Put
 putPosixTZ posix = do
   putWord8 10
-  putASCII $ fromMaybe "" posix
+  putASCII "POSIX TZ string"$ fromMaybe "" posix
   putWord8 10
 
 putTtInfo :: TtInfo Int -> Put
@@ -220,5 +221,11 @@ putBool True  = putWord8 1
 uniq :: Eq a => [a] -> [a]
 uniq = map head . group
 
-putASCII :: String -> Put
-putASCII = putByteString . B.pack . map (fromIntegral . fromEnum)
+putASCII :: String -> String -> Put
+putASCII what =
+    putByteString . B.pack . map (fromIntegral . verify . fromEnum)
+  where
+    verify c
+     | c >= 32 && c <= 126 = c
+     | otherwise           = error $ "Cannot render TimeZoneSeries: " ++
+                               what ++ " contains non-ASCII characters"
