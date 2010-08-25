@@ -69,9 +69,9 @@ timeZoneSeriesToOlson (TimeZoneSeries dflt pairs)
  | otherwise = Just $
     OlsonData
       [Transition secs ttinfo |
-         (t, tzs) <- reverse pairs,
+         (t, tz) <- reverse pairs,
          let secs = round $ utcTimeToPOSIXSeconds t,
-         ttinfo <- maybeToList $ lookup (mkTT tzs) ttAssocs]
+         ttinfo <- maybeToList $ lookup (mkTT tz) ttAssocs]
       ttinfos
       []
       Nothing
