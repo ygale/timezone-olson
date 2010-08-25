@@ -39,9 +39,12 @@ import Data.Binary.Get (Get, runGet, getWord8, getWord32be, getWord64be,
 import qualified Data.ByteString as B
 import qualified Data.ByteString.Lazy as L
 import Data.Monoid (mappend)
+import Data.List (sortBy, groupBy)
 import Data.Maybe (listToMaybe, fromMaybe)
 import Data.Word (Word8)
 import Data.Int (Int32, Int64)
+import Data.Ord (comparing)
+import Data.Function (on)
 import Data.Typeable (Typeable)
 import Control.Monad (guard, replicateM, replicateM_, when)
 import Control.Exception.Extensible (try, throw, Exception, ErrorCall)
@@ -57,8 +60,8 @@ instance Exception OlsonError
 -- | Convert parsed Olson timezone data into a @TimeZoneSeries@.
 olsonToTimeZoneSeries :: OlsonData -> Maybe TimeZoneSeries
 olsonToTimeZoneSeries (OlsonData ttimes ttinfos@(dflt0:_) _ _) =
-    fmap (TimeZoneSeries $ mkTZ dflt) . mapM (lookupTZ ttinfos) $
-    reverse ttimes
+    fmap (TimeZoneSeries $ mkTZ dflt) . mapM (lookupTZ ttinfos) .
+    uniqTimes . sortBy futureToPast $ ttimes
   where
     dflt = fromMaybe dflt0 . listToMaybe $ filter isStd ttinfos
     isStd (TtInfo _ isdst _ _) = not isdst
@@ -67,6 +70,8 @@ olsonToTimeZoneSeries (OlsonData ttimes ttinfos@(dflt0:_) _ _) =
     lookupTZ ttinfos ttime = fmap (((,) $ toUTC ttime) . mkTZ) . listToMaybe $
                              drop (transIndex ttime) ttinfos
     toUTC = posixSecondsToUTCTime . fromIntegral . transTime
+    uniqTimes = map last . groupBy ((==) `on` transTime)
+    futureToPast = comparing $ negate . transTime
 olsonToTimeZoneSeries _ = Nothing
 
 -- | Read timezone data from a binary Olson timezone file and convert

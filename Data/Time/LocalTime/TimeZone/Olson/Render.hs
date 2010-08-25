@@ -30,7 +30,7 @@ module Data.Time.LocalTime.TimeZone.Olson.Render
  renderOlsonToFile,
  verifyOlsonLimits,
  putOlson,
- splitOlson
+ extractOlsonV1
 )
 where
 
@@ -110,49 +110,35 @@ renderOlsonToFile fp olson = do
 
 -- | Render Olson timezone data in binary Olson timezone file format
 -- as a lazy @ByteString@
-putOlson :: OlsonData -> Put
-putOlson olson = putOlsonParts version olson1 olson2 posix >> flush
+putOlson olson@(OlsonData _ _ _ posix)
+  | fitsInVersion1 =    putOlsonPart 0  put32bitIntegral olson
+  | otherwise      = do putOlsonPart 50 put32bitIntegral olson1
+                        putOlsonPart 50 put64bitIntegral olson
+                        putPosixTZ posix
   where
-    (olson1, olson2, posix) = splitOlson olson
-    version
-     | olson2 /= mempty = 50
-     | otherwise        = maybe 0 (const 50) $ posix >>= guard . not . null
+    olson1 = extractOlsonV1 olson
+    fitsInVersion1 = fmap null posix /= Just False &&
+                     olson1 == olson {olsonPosixTZ = Nothing}
 
--- | Split Olson timezone data into three parts: timezone data that can
--- be rendered using Version 1 format, timezone data that can only be
--- rendered using Version 2 format, and the POSIX-style TZ string
--- if specified
-splitOlson :: OlsonData -> (OlsonData, OlsonData, Maybe String)
-splitOlson (OlsonData transs ttinfos leaps posix) =
-    (OlsonData transs1 ttinfos1 leaps1 Nothing,
-     OlsonData transs2 ttinfos2 leaps2 Nothing,
-     posix)
+-- | Extract Olson timezone data that can be rendered using Version 1 format
+extractOlsonV1 :: OlsonData -> OlsonData
+extractOlsonV1 (OlsonData transs  ttinfos  leaps  _)
+  | allV1     = OlsonData transs  ttinfos  leaps  Nothing
+  | otherwise = OlsonData transs1 ttinfos1 leaps1 Nothing
   where
     cutoff = 0x80000000 -- 2^31
     fitsIn32bits x = x < cutoff && x >= negate cutoff
-    ( leaps1 ,  leaps2 ) = partition (fitsIn32bits .  leapTime)  leaps
-    (transs1', transs2') = partition (fitsIn32bits . transTime) transs
-    assoc1 = mkAssoc [0] transs1'
-    assoc2 = mkAssoc []  transs2'
-    transs1 = mkTranss transs1' assoc1
-    transs2 = mkTranss transs2' assoc2
-    ttinfos1 = mkTtinfos assoc1
-    ttinfos2 = mkTtinfos assoc2
-    mkAssoc prepend transs' = zip
+    leaps1   = filter (fitsIn32bits .  leapTime)  leaps
+    transs1' = filter (fitsIn32bits . transTime) transs
+    allV1 = length leaps1 == length leaps && length transs1' == length transs
+    assoc1 = zip
       (sortBy (comparing $ fmap tt_ttype . listToMaybe . flip drop ttinfos) .
-        uniq . sort . (prepend ++) $ map transIndex transs')
+        uniq . sort . (0 :) $ map transIndex transs1')
       [0..]
-    mkTranss transs' assoc = [t {transIndex = i} |
-      t <- transs', i <- maybeToList $ lookup (transIndex t) assoc]
-    mkTtinfos assoc = map snd . dropWhile (isNothing . fst) .
-      sortBy (comparing fst) $ zip (map (flip lookup assoc) [0..]) ttinfos
-
-putOlsonParts :: Word8 -> OlsonData -> OlsonData -> Maybe String -> Put
-putOlsonParts 0  olson1 _      _     = putOlsonPart 0 put32bitIntegral olson1
-putOlsonParts v2 olson1 olson2 posix = do
-  putOlsonPart v2 put32bitIntegral olson1
-  putOlsonPart v2 put64bitIntegral olson2
-  putPosixTZ posix
+    transs1 = [t {transIndex = i} |
+      t <- transs1', i <- maybeToList $ lookup (transIndex t) assoc1]
+    ttinfos1 = map snd . dropWhile (isNothing . fst) .
+      sortBy (comparing fst) $ zip (map (flip lookup assoc1) [0..]) ttinfos
 
 putOlsonPart :: Word8 -> (Integer -> Put) -> OlsonData -> Put
 putOlsonPart version putTime (OlsonData transs ttinfos leaps _) = do
