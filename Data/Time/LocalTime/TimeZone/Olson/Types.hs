@@ -65,8 +65,11 @@ data OlsonData =
 
 instance Monoid OlsonData where
   mempty = OlsonData [] [] [] Nothing
-  mappend (OlsonData a  b  c  d ) (OlsonData a' b' c' d')
-    = OlsonData (a++a') (b++b') (c++c') (d `mplus` d')
+  mappend (OlsonData a  b  c  d ) (OlsonData a' b' c' d') =
+      OlsonData (a ++ map (shiftBy $ length b) a')
+                (b ++ b') (c ++ c') (d `mplus` d')
+    where
+      shiftBy n trans = trans {transIndex = n + transIndex trans}
 
 -- | A @Transition@ represents a moment when the clocks change in a
 -- timezone. It consists of a Unix timestamp value that indicates the
