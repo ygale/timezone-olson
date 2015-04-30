@@ -22,8 +22,12 @@ Category:            Data
 Build-type:          Simple
 Extra-source-files:  README.md, catTZ.hs, hzdump.hs
 Cabal-version:       >=1.10
+Source-repository HEAD
+  type:              git
+  location:          https://github.com/ygale/timezone-olson.git
 
 Library
+  Default-language:    Haskell2010
   Exposed-modules:    Data.Time.LocalTime.TimeZone.Olson
                     , Data.Time.LocalTime.TimeZone.Olson.Parse
                     , Data.Time.LocalTime.TimeZone.Olson.Render
