@@ -17,7 +17,7 @@ License:             BSD3
 License-file:        LICENSE
 Author:              Yitzchak Gale
 Maintainer:          yitz@sefer.org
-Copyright:           Copyright (c) 2010 -2015Yitzchak Gale. All rights reserved.
+Copyright:           Copyright (c) 2010-2015 Yitzchak Gale. All rights reserved.
 Category:            Data
 Build-type:          Simple
 Extra-source-files:  README.md, catTZ.hs, hzdump.hs

@@ -1,39 +1,33 @@
-timezone-olson version 0.1.0
+# timezone-olson
+
+On Hackage: [timezone-olson](http://hackage.haskell.org/package/timezone-olson)
 
 This package provides a parser and renderer for binary Olson timezone
 files whose format is specified by the tzfile(5) man page on Unix-like
 systems. For more information about this format, see
-<http://www.twinsun.com/tz/tz-link.htm>. Functions are provided for
-converting the parsed data into 'TimeZoneSeries' objects from the
-timezone-series package. On many platforms, binary Olson timezone
+[the IANA timezone database site](https://www.iana.org/time-zones).
+
+Functions are provided for
+converting the parsed data into `TimeZoneSeries` objects from the
+[timezone-series](http://hackage.haskell.org/package/timezone-series)
+package. On many platforms, binary Olson timezone
 files suitable for use with this package are available in the
-directory /usr/share/zoneinfo and its subdirectories on your computer.
+directory `/usr/share/zoneinfo` and its subdirectories on your computer.
 
-This version of timezone-olson is highly experimental.  Expect there
-to be bugs, and do not rely on any stability of the exposed
-interfaces.
+See also the
+[timezone-olson-th](http://hackage.haskell.org/package/timezone-olson-th)
+package for a way to include timezone informaton from a binary Olson
+timezone file at compile time.
 
-Copyright (c) 2010 Yitzchak Gale. All rights reserved.
+Copyright (c) 2010-2015 Yitzchak Gale. All rights reserved.
+
 For licensing information, see the BSD3-style license in the file
 LICENSE that was originally distributed by the author together with
 this file.
 
-This package is part of the time-ng project:
-http://projects.haskell.org/time-ng/
+This package is part of the [time-ng project](http://projects.haskell.org/time-ng/).
 
-Send suggestions, bug reports, and patches to:
-yitz@community.haskell.org
-
-INSTALLATION:
-
-To install the latest version of this package, make sure that
-cabal-install is installed on your system (it is if you have installed
-the Haskell Platform) and type the commands:
-
-cabal update
-cabal install timezone-olson
-
-TESTING UTILITIES:
+## Testing utilities
 
 This package also provides two Haskell files, each of which can be
 compiled into a command-line utility that might be helpful for testing
