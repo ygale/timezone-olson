@@ -1,8 +1,9 @@
 {-# OPTIONS_HADDOCK hide #-}
+{-# LANGUAGE CPP #-}
 -----------------------------------------------------------------------------
 -- |
 -- Module      :  Data.Time.LocalTime.TimeZone.Olson.Types
--- Copyright   :  Yitzchak Gale 2010
+-- Copyright   :  Yitzchak Gale 2018
 --
 -- Maintainer  :  Yitzchak Gale <gale@sefer.org>
 -- Portability :  portable
@@ -36,6 +37,9 @@ module Data.Time.LocalTime.TimeZone.Olson.Types
 )
 where
 
+#if MIN_VERSION_base(4,11,0)
+import Data.Semigroup (Semigroup(..))
+#endif
 import Data.Monoid (Monoid(..))
 import Control.Monad (mplus)
 
@@ -71,6 +75,17 @@ data OlsonData =
     }
   deriving (Eq, Show)
 
+#if MIN_VERSION_base(4,11,0)
+instance Semigroup OlsonData where
+  OlsonData a  b  c  d <> OlsonData a' b' c' d' =
+      OlsonData (a ++ map (shiftBy $ length b) a')
+                (b ++ b') (c ++ c') (d `mplus` d')
+    where
+      shiftBy n trans = trans {transIndex = n + transIndex trans}
+
+instance Monoid OlsonData where
+  mempty = OlsonData [] [] [] Nothing
+#else
 instance Monoid OlsonData where
   mempty = OlsonData [] [] [] Nothing
   mappend (OlsonData a  b  c  d ) (OlsonData a' b' c' d') =
@@ -78,6 +93,7 @@ instance Monoid OlsonData where
                 (b ++ b') (c ++ c') (d `mplus` d')
     where
       shiftBy n trans = trans {transIndex = n + transIndex trans}
+#endif
 
 -- | A @Transition@ represents a moment when the clocks change in a
 -- timezone. It consists of a Unix timestamp value that indicates the
