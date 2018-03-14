@@ -25,7 +25,7 @@ Category:            Data
 Build-type:          Simple
 Extra-source-files:  README.md, catTZ.hs, hzdump.hs
 Cabal-version:       >=1.10
-Tested-with:         GHC > 7.4 && < 8.5
+Tested-with:         GHC > 8.0 && < 8.5
 
 Source-repository HEAD
   type:              git
