@@ -20,11 +20,13 @@ License:             BSD3
 License-file:        LICENSE
 Author:              Yitzchak Gale
 Maintainer:          yitz@sefer.org
-Copyright:           Copyright (c) 2010-2015 Yitzchak Gale. All rights reserved.
+Copyright:           Copyright (c) 2010-2018 Yitzchak Gale. All rights reserved.
 Category:            Data
 Build-type:          Simple
 Extra-source-files:  README.md, catTZ.hs, hzdump.hs
 Cabal-version:       >=1.10
+Tested-with:         GHC > 7.4 && < 8.5
+
 Source-repository HEAD
   type:              git
   location:          https://github.com/ygale/timezone-olson.git
@@ -37,7 +39,7 @@ Library
                     , Data.Time.LocalTime.TimeZone.Olson.Types
   Build-depends:       base >= 3.0 && < 5.0,
                        timezone-series >= 0.1.0 && < 0.2,
-                       time >= 1.6 && < 1.9,
+                       time >= 1.6 && < 1.10,
                        binary >= 0.4.1 && < 0.9,
                        bytestring >= 0.9 && < 1.0,
                        extensible-exceptions >= 0.1.0 && < 0.2
