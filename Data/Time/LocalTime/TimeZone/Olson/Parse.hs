@@ -3,7 +3,7 @@
 -----------------------------------------------------------------------------
 -- |
 -- Module      :  Data.Time.LocalTime.TimeZone.Olson.Parse
--- Copyright   :  Yitzchak Gale 2010
+-- Copyright   :  Yitzchak Gale 2018
 --
 -- Maintainer  :  Yitzchak Gale <gale@sefer.org>
 -- Portability :  portable
@@ -14,7 +14,7 @@
 -- <http://www.twinsun.com/tz/tz-link.htm>. Functions are provided for
 -- converting the parsed data into 'TimeZoneSeries' objects.
 
-{- Copyright (c) 2010 Yitzchak Gale. All rights reserved.
+{- Copyright (c) 2018 Yitzchak Gale. All rights reserved.
 For licensing information, see the BSD3-style license in the file
 LICENSE that was originally distributed by the author together with
 this file. -}

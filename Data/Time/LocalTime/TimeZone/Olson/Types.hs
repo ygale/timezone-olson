@@ -15,7 +15,7 @@
 --
 -- Both Version 1 and Version 2 timezone data can be represented.
 
-{- Copyright (c) 2010 Yitzchak Gale. All rights reserved.
+{- Copyright (c) 2018 Yitzchak Gale. All rights reserved.
 For licensing information, see the BSD3-style license in the file
 LICENSE that was originally distributed by the author together with
 this file. -}

@@ -1,7 +1,7 @@
 -----------------------------------------------------------------------------
 -- |
 -- Module      :  Data.Time.LocalTime.TimeZone.Olson
--- Copyright   :  Yitzchak Gale 2010
+-- Copyright   :  Yitzchak Gale 2018
 --
 -- Maintainer  :  Yitzchak Gale <gale@sefer.org>
 -- Portability :  portable
@@ -13,7 +13,7 @@
 -- converting the parsed data into @TimeZoneSeries@ and @TimeZone@
 -- objects.
 
-{- Copyright (c) 2010 Yitzchak Gale. All rights reserved.
+{- Copyright (c) 2018 Yitzchak Gale. All rights reserved.
 For licensing information, see the BSD3-style license in the file
 LICENSE that was originally distributed by the author together with
 this file. -}

@@ -2,7 +2,7 @@
 -----------------------------------------------------------------------------
 -- |
 -- Module      :  Data.Time.LocalTime.TimeZone.Olson.Render
--- Copyright   :  Yitzchak Gale 2010
+-- Copyright   :  Yitzchak Gale 2018
 --
 -- Maintainer  :  Yitzchak Gale <gale@sefer.org>
 -- Portability :  portable
@@ -12,7 +12,7 @@
 -- Unix-like systems. For more information about this format, see
 -- <http://www.twinsun.com/tz/tz-link.htm>.
 
-{- Copyright (c) 2010 Yitzchak Gale. All rights reserved.
+{- Copyright (c) 2018ZZ Yitzchak Gale. All rights reserved.
 For licensing information, see the BSD3-style license in the file
 LICENSE that was originally distributed by the author together with
 this file. -}
