@@ -60,7 +60,7 @@ instance Exception OlsonError
 -- | Convert parsed Olson timezone data into a @TimeZoneSeries@.
 olsonToTimeZoneSeries :: OlsonData -> Maybe TimeZoneSeries
 olsonToTimeZoneSeries (OlsonData ttimes ttinfos@(dflt0:_) _ _) =
-    fmap (TimeZoneSeries $ mkTZ dflt) . mapM (lookupTZ ttinfos) .
+    fmap (TimeZoneSeries $ mkTZ dflt) . mapMMaybe (lookupTZ ttinfos) .
     uniqTimes . sortBy futureToPast $ ttimes
   where
     dflt = fromMaybe dflt0 . listToMaybe $ filter isStd ttinfos
@@ -73,6 +73,16 @@ olsonToTimeZoneSeries (OlsonData ttimes ttinfos@(dflt0:_) _ _) =
     uniqTimes = map last . groupBy ((==) `on` transTime)
     futureToPast = comparing $ negate . transTime
 olsonToTimeZoneSeries _ = Nothing
+
+mapMMaybe :: (a -> Maybe b) -> [a] -> Maybe [b]
+mapMMaybe f ls = mapMCont f ls []
+
+mapMCont :: (a -> Maybe b) -> [a] -> [b] -> Maybe [b]
+mapMCont f [] acc = Just (reverse acc)
+mapMCont f (x:xs) acc =
+  case f x of
+    Nothing -> Nothing
+    Just x  -> mapMCont f xs (x:acc)
 
 -- | Read timezone data from a binary Olson timezone file and convert
 -- it into a @TimeZoneSeries@ for use together with the types and
