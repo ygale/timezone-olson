@@ -149,8 +149,8 @@ getOlsonPart verifyMagic limits getTime = do
       (version,
        OlsonData
          (zipWith Transition times indexes)
-         (map (flip lookupAbbr abbr_chars) . zipWith setTtype ttinfos $
-           zipWithExtend boolsToTType False False isstds isgmts)
+         (map (flip lookupAbbr abbr_chars) . zipWith setTtype ttinfos $ zipWith
+           boolsToTType (isstds ++ repeat False) (isgmts ++ repeat False))
          leaps
          Nothing
       )
@@ -163,14 +163,6 @@ getOlsonPart verifyMagic limits getTime = do
     boolsToTType isstd _
                              | isstd     = Std
                              | otherwise = Wall
-
--- A variant of zipWith whose result is the length of the longer
--- rather than the shorter list, by extending the shorter list with
--- a default value
-zipWithExtend :: (a -> b -> c) -> a -> b -> [a] -> [b] -> [c]
-zipWithExtend f x0 y0 (x:xs) (y:ys) = f x y : zipWithExtend f x0 y0 xs ys
-zipWithExtend f x0 _  []     ys     = map (f x0) ys
-zipWithExtend f _  y0 xs     _      = map (flip f y0) xs
 
 -- Parse a POSIX-style TZ string.
 -- We don't try to understand the TZ string, we just pass it along whole.
