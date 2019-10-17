@@ -117,6 +117,13 @@ getOlson limits = do
             verify (const False) msg undefined
 
 -- Parse the part of an Olson file that contains timezone data
+
+-- We are lenient about invalid values of @isstdcnt@ and @isutcnt@.
+-- Before RFC 8536, we ignored transitions that did not have a
+-- corresponding value for both @isstd@ and @isut@.  Staring with RFC
+-- 8536, when zero became a valid value for @isstdcont@ and @isutcnt@,
+-- we extend @isstds@ and @isuts@ with default values if they are too
+-- short. Thanks to Github user @mniip@ for suggesting this change.
 getOlsonPart :: Integral a => Bool -> SizeLimits -> Get a ->
                 Get (Word8, OlsonData)
 getOlsonPart verifyMagic limits getTime = do
@@ -148,7 +155,9 @@ getOlsonPart verifyMagic limits getTime = do
        OlsonData
          (zipWith Transition times indexes)
          (map (flip lookupAbbr abbr_chars) . zipWith setTtype ttinfos $
-           zipWithExtend boolsToTType False False isstds isuts)
+           zipWith boolsToTType
+             (isstds ++ repeat False) (isuts ++ repeat False)
+         )
          leaps
          Nothing
       )
@@ -161,14 +170,6 @@ getOlsonPart verifyMagic limits getTime = do
     boolsToTType isstd _
                             | isstd     = Std
                             | otherwise = Wall
-
--- A variant of zipWith whose result is the length of the longer
--- rather than the shorter list, by extending the shorter list with
--- a default value
-zipWithExtend :: (a -> b -> c) -> a -> b -> [a] -> [b] -> [c]
-zipWithExtend f x0 y0 (x:xs) (y:ys) = f x y : zipWithExtend f x0 y0 xs ys
-zipWithExtend f x0 _  []     ys     = map (f x0) ys
-zipWithExtend f _  y0 xs     _      = map (flip f y0) xs
 
 -- Parse a POSIX-style TZ string.
 -- We don't try to understand the TZ string, we just pass it along whole.
