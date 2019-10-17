@@ -3,19 +3,17 @@
 -----------------------------------------------------------------------------
 -- |
 -- Module      :  Data.Time.LocalTime.TimeZone.Olson.Types
--- Copyright   :  Yitzchak Gale 2018
+-- Copyright   :  Yitzchak Gale 2019
 --
 -- Maintainer  :  Yitzchak Gale <gale@sefer.org>
 -- Portability :  portable
 --
--- Data types to represent timezone data as used in Olson timezone
--- files, and as specified by the tzfile(5) man page on Unix-like
--- systems. For more information about this format, see
--- <http://www.twinsun.com/tz/tz-link.htm>.
+-- Data types to represent timezone data used in Olson timezone files,
+-- as specified by RFC 8536.
 --
--- Both Version 1 and Version 2 timezone data can be represented.
+-- Both Version 1, 2, and 3 timezone data can be represented.
 
-{- Copyright (c) 2018 Yitzchak Gale. All rights reserved.
+{- Copyright (c) 2019 Yitzchak Gale. All rights reserved.
 For licensing information, see the BSD3-style license in the file
 LICENSE that was originally distributed by the author together with
 this file. -}
@@ -127,7 +125,7 @@ data TransitionType = Std | Wall | UTC
 -- timezone file).
 data TtInfo abbr = 
        TtInfo
-         {tt_gmtoff :: Int, -- ^ The offset of local clocks from UTC,
+         {tt_utoff :: Int,  -- ^ The offset of local clocks from UTC,
                             -- in seconds
           tt_isdst :: Bool, -- ^ True if local clocks are summer time
           tt_ttype :: TransitionType,

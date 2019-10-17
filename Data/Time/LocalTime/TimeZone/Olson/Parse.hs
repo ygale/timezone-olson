@@ -3,18 +3,16 @@
 -----------------------------------------------------------------------------
 -- |
 -- Module      :  Data.Time.LocalTime.TimeZone.Olson.Parse
--- Copyright   :  Yitzchak Gale 2018
+-- Copyright   :  Yitzchak Gale 2019
 --
 -- Maintainer  :  Yitzchak Gale <gale@sefer.org>
 -- Portability :  portable
 --
 -- A parser for binary Olson timezone files whose format is specified
--- by the tzfile(5) man page on Unix-like systems. For more
--- information about this format, see
--- <http://www.twinsun.com/tz/tz-link.htm>. Functions are provided for
--- converting the parsed data into 'TimeZoneSeries' objects.
+-- in RFC 8536. Functions are provided for converting the parsed data
+-- into 'TimeZoneSeries' objects.
 
-{- Copyright (c) 2018 Yitzchak Gale. All rights reserved.
+{- Copyright (c) 2019 Yitzchak Gale. All rights reserved.
 For licensing information, see the BSD3-style license in the file
 LICENSE that was originally distributed by the author together with
 this file. -}
@@ -65,8 +63,8 @@ olsonToTimeZoneSeries (OlsonData ttimes ttinfos@(dflt0:_) _ _) =
   where
     dflt = fromMaybe dflt0 . listToMaybe $ filter isStd ttinfos
     isStd (TtInfo _ isdst _ _) = not isdst
-    mkTZ (TtInfo gmtoff isdst _ abbr) =
-      TimeZone ((gmtoff + 30) `div` 60) isdst abbr
+    mkTZ (TtInfo utoff isdst _ abbr) =
+      TimeZone ((utoff + 30) `div` 60) isdst abbr
     lookupTZ ttinfos ttime = fmap (((,) $ toUTC ttime) . mkTZ) . listToMaybe $
                              drop (transIndex ttime) ttinfos
     toUTC = posixSecondsToUTCTime . fromIntegral . transTime
@@ -126,7 +124,7 @@ getOlsonPart verifyMagic limits getTime = do
     when verifyMagic $ verify_ (== "TZif") "missing magic number" magic
     version <- getWord8
     replicateM_ 15 getWord8 -- padding nulls
-    tzh_ttisgmtcnt <- get32bitInt
+    tzh_ttisutcnt <- get32bitInt
     tzh_ttisstdcnt <- get32bitInt
     tzh_leapcnt <- get32bitInt
       >>= verify (withinLimit maxLeaps) "too many leap second specifications"
@@ -134,7 +132,7 @@ getOlsonPart verifyMagic limits getTime = do
       >>= verify (withinLimit maxTimes) "too many timezone transitions"
     tzh_typecnt <- get32bitInt
       >>= verify (withinLimit maxTypes) "too many timezone type specifications"
-    verify (withinLimit maxTypes) "too many isgmt specifiers" tzh_ttisgmtcnt
+    verify (withinLimit maxTypes) "too many isut specifiers" tzh_ttisutcnt
     verify (withinLimit maxTypes) "too many isstd specifiers" tzh_ttisstdcnt
     tzh_charcnt <- get32bitInt
       >>= verify (withinLimit maxAbbrChars) "too many tilezone specifiers"
@@ -144,25 +142,25 @@ getOlsonPart verifyMagic limits getTime = do
     abbr_chars <- fmap (toASCII . B.unpack) $ getByteString tzh_charcnt
     leaps <- replicateM tzh_leapcnt $ getLeapInfo getTime
     isstds <- replicateM tzh_ttisstdcnt getBool
-    isgmts <- replicateM tzh_ttisgmtcnt getBool
+    isuts <- replicateM tzh_ttisutcnt getBool
     return
       (version,
        OlsonData
          (zipWith Transition times indexes)
          (map (flip lookupAbbr abbr_chars) . zipWith setTtype ttinfos $
-           zipWithExtend boolsToTType False False isstds isgmts)
+           zipWithExtend boolsToTType False False isstds isuts)
          leaps
          Nothing
       )
   where
     withinLimit limit value = maybe True (value <=) $ limit limits
-    lookupAbbr (TtInfo gmtoff isdst ttype abbrind) =
-      TtInfo gmtoff isdst ttype . takeWhile (/= '\NUL') . drop abbrind
+    lookupAbbr (TtInfo utoff isdst ttype abbrind) =
+      TtInfo utoff isdst ttype . takeWhile (/= '\NUL') . drop abbrind
     setTtype ttinfo ttype = ttinfo {tt_ttype = ttype}
-    boolsToTType _     isgmt | isgmt     = UTC
+    boolsToTType _     isut | isut      = UTC
     boolsToTType isstd _
-                             | isstd     = Std
-                             | otherwise = Wall
+                            | isstd     = Std
+                            | otherwise = Wall
 
 -- A variant of zipWith whose result is the length of the longer
 -- rather than the shorter list, by extending the shorter list with
@@ -188,10 +186,10 @@ getPosixTZ = do
 -- Data.Time.TimeZone object.
 getTtInfo :: Get (TtInfo Int)
 getTtInfo = do
-    gmtoff <- get32bitInt
+    utoff <- get32bitInt
     isdst <- getBool
     abbrind <- get8bitInt
-    return $ TtInfo gmtoff isdst Wall abbrind
+    return $ TtInfo utoff isdst Wall abbrind
 
 -- Parse leap second info. (usually not used)
 getLeapInfo :: Integral a => Get a -> Get LeapInfo

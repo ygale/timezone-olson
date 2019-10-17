@@ -3,9 +3,7 @@
 On Hackage: [timezone-olson](http://hackage.haskell.org/package/timezone-olson)
 
 This package provides a parser and renderer for binary Olson timezone
-files whose format is specified by the tzfile(5) man page on Unix-like
-systems. For more information about this format, see
-[the IANA timezone database site](https://www.iana.org/time-zones).
+files whose format is specified in RFC 8536.
 
 Functions are provided for
 converting the parsed data into `TimeZoneSeries` objects from the
@@ -19,7 +17,7 @@ See also the
 package for a way to include timezone informaton from a binary Olson
 timezone file at compile time.
 
-Copyright (c) 2010-2018 Yitzchak Gale. All rights reserved.
+Copyright (c) 2010-2019 Yitzchak Gale. All rights reserved.
 
 For licensing information, see the BSD3-style license in the file
 LICENSE that was originally distributed by the author together with

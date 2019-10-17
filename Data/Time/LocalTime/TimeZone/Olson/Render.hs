@@ -2,17 +2,15 @@
 -----------------------------------------------------------------------------
 -- |
 -- Module      :  Data.Time.LocalTime.TimeZone.Olson.Render
--- Copyright   :  Yitzchak Gale 2018
+-- Copyright   :  Yitzchak Gale 2019
 --
 -- Maintainer  :  Yitzchak Gale <gale@sefer.org>
 -- Portability :  portable
 --
--- Render Olson timezone data in the standard binary format as used in
--- Olson timezone files, and as specified by the tzfile(5) man page on
--- Unix-like systems. For more information about this format, see
--- <http://www.twinsun.com/tz/tz-link.htm>.
+-- Render Olson timezone data in the standard binary format used in
+-- Olson timezone files, as specified in RFC 8536.
 
-{- Copyright (c) 2018ZZ Yitzchak Gale. All rights reserved.
+{- Copyright (c) 2019 Yitzchak Gale. All rights reserved.
 For licensing information, see the BSD3-style license in the file
 LICENSE that was originally distributed by the author together with
 this file. -}
@@ -146,7 +144,7 @@ putOlsonPart version putTime (OlsonData transs ttinfos leaps _) = do
     putWord8 version
     putByteString . B.pack $ replicate 15 0 -- padding nulls
     replicateM_ 2 $ putCount ttinfosWithTtype
-                               -- tzh_ttisgmtcnt
+                               -- tzh_ttisutcnt
                                -- tzh_ttisstdcnt
     putCount leaps             -- tzh_leapcnt
     putCount transs            -- tzh_timecnt
@@ -158,7 +156,7 @@ putOlsonPart version putTime (OlsonData transs ttinfos leaps _) = do
     mapM_ putAbbr abbrStrings
     mapM_ (putLeapInfo putTime) leaps
     mapM_ (putBool . (== Std) . tt_ttype) ttinfosWithTtype -- isstd
-    mapM_ (putBool . (== UTC) . tt_ttype) ttinfosWithTtype -- isgmt
+    mapM_ (putBool . (== UTC) . tt_ttype) ttinfosWithTtype -- isut
   where
     putCount = put32bitIntegral . length
     ttinfosWithTtype = takeWhile ((<= UTC) . tt_ttype) ttinfosIndexed
@@ -167,8 +165,8 @@ putOlsonPart version putTime (OlsonData transs ttinfos leaps _) = do
     putAbbr abbr = putASCII "time zone abbreviation" abbr >> putWord8 0
     abbrAssocs = zip abbrStrings . scanl (+) 0 $
                  map ((+ 1) . length) abbrStrings
-    ttinfosIndexed = [TtInfo gmtoff isdst ttype i |
-      TtInfo gmtoff isdst ttype abbr <- ttinfos,
+    ttinfosIndexed = [TtInfo utoff isdst ttype i |
+      TtInfo utoff isdst ttype abbr <- ttinfos,
       i <- maybeToList $ lookup abbr abbrAssocs]
 
 putPosixTZ :: Maybe String -> Put
@@ -179,7 +177,7 @@ putPosixTZ posix = do
 
 putTtInfo :: TtInfo Int -> Put
 putTtInfo tt = do
-    put32bitIntegral $ tt_gmtoff tt
+    put32bitIntegral $ tt_utoff tt
     putBool $ tt_isdst tt
     put8bitIntegral $ tt_abbr tt
 
