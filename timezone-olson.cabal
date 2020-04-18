@@ -1,5 +1,5 @@
 Name:                timezone-olson
-Version:             0.1.9
+Version:             0.2.0
 Synopsis:            A pure Haskell parser and renderer for binary Olson timezone files
 Description:         A parser and renderer for binary Olson timezone
                      files whose format is specified by the tzfile(5)
