@@ -17,7 +17,7 @@ See also the
 package for a way to include timezone informaton from a binary Olson
 timezone file at compile time.
 
-Copyright (c) 2010-2019 Yitzchak Gale. All rights reserved.
+Copyright (c) 2010-2021 Yitzchak Gale. All rights reserved.
 
 For licensing information, see the BSD3-style license in the file
 LICENSE that was originally distributed by the author together with

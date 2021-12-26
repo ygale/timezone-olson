@@ -1,5 +1,5 @@
 Name:                timezone-olson
-Version:             0.2.0
+Version:             0.2.1
 Synopsis:            A pure Haskell parser and renderer for binary Olson timezone files
 Description:         A parser and renderer for binary Olson timezone
                      files whose format is specified by the tzfile(5)
@@ -20,7 +20,7 @@ License:             BSD3
 License-file:        LICENSE
 Author:              Yitzchak Gale
 Maintainer:          yitz@sefer.org
-Copyright:           Copyright (c) 2010-2018 Yitzchak Gale. All rights reserved.
+Copyright:           Copyright (c) 2010-2021 Yitzchak Gale. All rights reserved.
 Category:            Data
 Build-type:          Simple
 Extra-source-files:  README.md, catTZ.hs, hzdump.hs
