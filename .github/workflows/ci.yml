@@ -10,10 +10,10 @@ jobs:
       fail-fast: false
       matrix:
         os: [ubuntu-latest, windows-latest, macOS-latest]
-        ghc: ['9.0.1', '8.10.7', '8.8.4']
+        ghc: ['latest', '9.6.3', '9.4.8', '9.2.8']
     steps:
-    - uses: actions/checkout@v3
-    - uses: haskell/actions/setup@v2.0.1
+    - uses: actions/checkout@v4
+    - uses: haskell-actions/setup@v2
       id: setup-haskell-cabal
       with:
         ghc-version: ${{ matrix.ghc }}
